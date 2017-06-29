@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-  var x gethweb.Web3
-  x.Provider.HttpProvider("ddd", 12, "user", "pass")
+  var x gethweb.NewWeb3
+  x.Provider.HttpProvider("www.baidu.com", 12, "user", "pass")
   fmt.Printf("%v\n", x.Provider)
-  fmt.Println(x.Version.Api())
+  fmt.Println(x.Version.Node())
 }
