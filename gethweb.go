@@ -1,64 +1,77 @@
 package gethweb
 
 import (
-  "io/ioutil"
-  "net/http"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
 type httpProvider struct {
-  url          string
-  timeOut      int
-  authUsername string
-  authPassword string
+	url          string
+	timeOut      int
+	authUsername string
+	authPassword string
 }
 
-func (hp *httpProvider) HttpProvider(url string, timeOut int, username string, password string) {
-  *hp = httpProvider {
-    url          : url,
-    timeOut      : timeOut,
-    authUsername : username,
-    authPassword : password,
-  }
+func HttpProvider(url string, timeOut int, username string, password string) httpProvider {
+	return httpProvider {
+		url:          url,
+		timeOut:      timeOut,
+		authUsername: username,
+		authPassword: password,
+	}
 }
+
+var hp httpProvider
 
 type version struct {}
 
 func (v version) Api() (string) {
-  return "0.0.1"
+	return "0.0.1"
 }
 
 func (v version) Node() (string) {
-  var result string
-  resp, err := http.Get(web3.Provider.url)
-  if err != nil {
-    result = "get error"
-  }
-  defer resp.Body.Close()
-  body, err := ioutil.ReadAll(resp.Body)
-  if err != nil {
-    result = "get error"
-  }
-  if result == "" {
-    result = string(body)
-  }
-  return result
+	var result string
+	fmt.Println(hp.url)
+	resp, err := http.Get(hp.url)
+	if err != nil {
+		result = "get error"
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		result = "get error"
+	}
+	if result == "" {
+		result = string(body)
+	}
+	return result
 }
 
 type eth struct {}
 
-//func (e eth) GetAccounts() ([]string) {
-//  var results []string
-//  resp, err := http.Post()
-//}
-
-type Web3 struct {
-  Version      version
-  Provider     httpProvider
-  Eth          eth
+func (e eth) Accounts() ([]string) {
+	postData := postRqst{"eth_accounts", []string{}, 1, "2.0"}
+	postResult, err := post(hp.url, postData)
+	if err != nil {
+		fmt.Println(err)
+		return []string{}
+	}
+	return postResult.result.([]string)
 }
 
-var web3 Web3
+type Web3 struct {
+	Version      version
+	Provider     httpProvider
+	Eth          eth
+}
 
-func NewWeb3() Web3 {
-  return web3
+func NewWeb3(provider httpProvider) *Web3 {
+	hp = provider
+	w := &Web3{
+		Version:  version{},
+		Provider: provider,
+		Eth:      eth{},
+	}
+	return w
 }
