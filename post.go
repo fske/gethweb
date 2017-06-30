@@ -17,10 +17,10 @@ type postRqst struct{
 }
 
 type postResp struct{
-	id      int
-    jsonrpc string
-    result  interface{}
-	error   interface{}
+	Id      int
+    Jsonrpc string
+    Result  interface{}
+	Error   interface{}
 }
 
 func post(url string, data postRqst) (resp postResp, err error) {
@@ -33,15 +33,17 @@ func post(url string, data postRqst) (resp postResp, err error) {
 	defer response.Body.Close()
 	if err != nil {
 		fmt.Println("post error:", err)
-		resp = postResp{}
 		return resp, err
 	}
-	result, err := ioutil.ReadAll(response.Body)
+	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("read error:", err)
+		return resp, err
 	}
-	var rs interface{}
-	err = json.Unmarshal(result, &rs)
-	fmt.Println("rs:", rs)
-	return rs, nil
+	err = json.Unmarshal(responseBody, &resp)
+	if err != nil {
+		return resp, err
+	}
+	//fmt.Println("resp:", resp)
+	return resp, nil
 }

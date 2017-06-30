@@ -57,7 +57,15 @@ func (e eth) Accounts() ([]string) {
 		fmt.Println(err)
 		return []string{}
 	}
-	return postResult.result.([]string)
+	//fmt.Println(postResult.Result)
+	var accounts []string
+	for _, result := range postResult.Result.([]interface{}) {
+		account, ok := result.(string)
+		if ok == true {
+			accounts = append(accounts, account)
+		}
+	}
+	return accounts
 }
 
 type Web3 struct {
