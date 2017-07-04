@@ -12,12 +12,12 @@ import (
 type postRqst struct{
 	Method  string
 	Params  []string
-	Id      int
+	ID      int
     Jsonrpc string
 }
 
 type postResp struct{
-	Id      int
+	ID      int
     Jsonrpc string
     Result  interface{}
 	Error   interface{}
@@ -25,16 +25,16 @@ type postResp struct{
 
 func post(url string, data postRqst) (resp postResp, err error) {
 	contentType := "application/json"
-	b, err := json.Marshal(data)
-	b_lower := strings.ToLower(string(b))
-	body := bytes.NewBuffer([]byte(b_lower))
+	dataString := struct2LowerJson(data)
+	body := bytes.NewBuffer([]byte(dataString))
 
 	response, err := http.Post(url, contentType, body)
-	defer response.Body.Close()
 	if err != nil {
 		fmt.Println("post error:", err)
 		return resp, err
 	}
+	defer response.Body.Close()
+
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("read error:", err)
