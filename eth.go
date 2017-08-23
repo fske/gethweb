@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type transactionParams struct {
+type transactionParam struct {
 	From     string
 	To       string
 	Gas      int
@@ -14,7 +14,7 @@ type transactionParams struct {
 	Nonce    string
 }
 
-type contractParams struct {
+type contractParam struct {
 	Name string
 	Type string
 	Indexed bool
@@ -24,8 +24,8 @@ type abi struct {
 	Name     string
 	Type     string
 	Constant bool
-	Inputs   []contractParams
-	Outputs  []contractParams
+	Inputs   []contractParam
+	Outputs  []contractParam
 }
 
 type contract struct {
@@ -36,12 +36,14 @@ type contract struct {
 func (c *contract) At(address string) {
 	c.Address = address
 }
-func (c contract) SendTransaction(method string, inputs []contractParams) {
+
+func (c contract) SendTransaction(method string, inputs []contractParam) {
 	post("send_transaction", postRqst{})
 }
+
 type eth struct {}
 
-func (e eth) Accounts() ([]string) {
+func (e eth) Accounts() ([]string, error) {
 	postData := postRqst{
 		"eth_accounts",
 		[]string{},
@@ -51,7 +53,7 @@ func (e eth) Accounts() ([]string) {
 	postResult, err := post(hp.url, postData)
 	if err != nil {
 		fmt.Println(err)
-		return []string{}
+		return []string{}, err
 	}
 	//fmt.Println(postResult.Result)
 	var accounts []string
@@ -61,24 +63,23 @@ func (e eth) Accounts() ([]string) {
 			accounts = append(accounts, account)
 		}
 	}
-	return accounts
+	return accounts, nil
 }
 
-func (e eth) SendTransaction(txParams transactionParams) (string) {
-	`for key, value := range txParams {`
-		if key == "Gas" || key == "GasPrice" || key == "Value" {
-			txParams[key] = dec2Hex(value)
-		}
-	}
-	params := []string{struct2LowerJson(txParams)}
+func (e eth) SendTransaction(txParam transactionParam) (string, error) {
+	txParam.Gas = dec2Hex(txParam.Gas)
+	tx.Param.GasPrice = dec2Hex(txParam.GasPrice)
+	txParam.Value = dec2Hex(txParam.Value)
+
+	params := []string{struct2LowerJson(txParam)}
 	postData := postRqst{
 		"eth_sendTransaction",
 		params,
 		getRandomInt(),
 		"2.0",
 	}
-	postResult := post(hp.url, postData)
-	return postResult.Result.(string)
+	postResult, err := post(hp.url, postData)
+	return postResult.Result.(string), err
 }
 
 func (e eth) Contract(abiList []abi) contract {
