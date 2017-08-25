@@ -6,20 +6,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 type postRqst struct{
 	Method  string
 	Params  []string
 	ID      int
-    Jsonrpc string
+	Jsonrpc string
 }
 
 type postResp struct{
 	ID      int
-    Jsonrpc string
-    Result  interface{}
+	Jsonrpc string
+	Result  interface{}
 	Error   interface{}
 }
 
@@ -46,4 +45,18 @@ func post(url string, data postRqst) (resp postResp, err error) {
 	}
 	//fmt.Println("resp:", resp)
 	return resp, nil
+}
+
+func sendTransaction(url string, in map[string]interface{}) (string, error) {
+	var proto = new(sendTransactionInput)
+	uniParam, err := paramUniform(in, proto)
+	jsonParam := []string{map2LowerJson(uniParam)}
+	postData := postRqst{
+		"eth_sendTransaction",
+		jsonParam,
+		getRandomInt(),
+		"2.0",
+	}
+	postResult, err := post(url, postData)
+	return postResult.Result.(string), err
 }

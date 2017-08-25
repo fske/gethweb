@@ -4,44 +4,9 @@ import (
 	"fmt"
 )
 
-type transactionParam struct {
-	From     string
-	To       string
-	Gas      int
-	GasPrice int
-	Value    int
-	Data     string
-	Nonce    string
+type eth struct {
+	httpPrvd     httpProvider
 }
-
-type contractParam struct {
-	Name string
-	Type string
-	Indexed bool
-}
-
-type abi struct {
-	Name     string
-	Type     string
-	Constant bool
-	Inputs   []contractParam
-	Outputs  []contractParam
-}
-
-type contract struct {
-	AbiList []abi
-	Address string
-}
-
-func (c *contract) At(address string) {
-	c.Address = address
-}
-
-func (c contract) SendTransaction(method string, inputs []contractParam) {
-	post("send_transaction", postRqst{})
-}
-
-type eth struct {}
 
 func (e eth) Accounts() ([]string, error) {
 	postData := postRqst{
@@ -50,7 +15,7 @@ func (e eth) Accounts() ([]string, error) {
 		getRandomInt(),
 		"2.0",
 	}
-	postResult, err := post(hp.url, postData)
+	postResult, err := post(e.httpPrvd.url, postData)
 	if err != nil {
 		fmt.Println(err)
 		return []string{}, err
@@ -65,27 +30,44 @@ func (e eth) Accounts() ([]string, error) {
 	}
 	return accounts, nil
 }
-
-func (e eth) SendTransaction(txParam transactionParam) (string, error) {
-	txParam.Gas = dec2Hex(txParam.Gas)
-	tx.Param.GasPrice = dec2Hex(txParam.GasPrice)
-	txParam.Value = dec2Hex(txParam.Value)
-
-	params := []string{struct2LowerJson(txParam)}
-	postData := postRqst{
-		"eth_sendTransaction",
-		params,
-		getRandomInt(),
-		"2.0",
-	}
-	postResult, err := post(hp.url, postData)
-	return postResult.Result.(string), err
+func (e eth) SendTransaction(in map[string]interface{}) (string, error) {
+	return sendTransaction(e.httpPrvd.url, in)
 }
 
 func (e eth) Contract(abiList []abi) contract {
 	return contract{
 		AbiList: abiList,
+		httpPrvd: e.httpPrvd
 	}
 } 
+
+type abi struct {
+	Name     string
+	Type     string
+	Constant bool
+	Inputs   []contractParam
+	Outputs  []contractParam
+}
+
+type contract struct {
+	httpPrvd        httpProvider
+	AbiList         []abi
+	TransactionHash string
+	Address         string
+}
+
+func (c *contract) New(in map[string]interface{}) (*contract, error) {
+	resp, err := sendTransaction(c.httpPrvd.url, in)
+	return resp, err
+}
+
+func (c *contract) At(address string) (*contract) {
+	c.Address = address
+	return c
+}
+
+func (c contract) SendTransaction(method string, inputs []contractParam) {
+	post("send_transaction", postRqst{})
+}
 
 

@@ -6,7 +6,9 @@ import (
 	"net/http"
 )
 
-type version struct {}
+type version struct {
+	httpPrvd httpProvider
+}
 
 func (v version) Api() (string) {
 	return "0.0.1"
@@ -14,8 +16,8 @@ func (v version) Api() (string) {
 
 func (v version) Node() (string) {
 	var result string
-	fmt.Println(hp.url)
-	resp, err := http.Get(hp.url)
+	fmt.Println(v.httpPrvd.url)
+	resp, err := http.Get(v.httpPrvd.url)
 	if err != nil {
 		result = "get error"
 	}
