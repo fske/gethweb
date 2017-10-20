@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto/sha3"
 )
 
 func dec2Hex(decimal int64) (hex string) {
@@ -69,3 +71,9 @@ func paramUniform(paramSet map[string]interface{}, proto interface{}) (map[strin
 	return uniParamSet, nil
 }
 
+func sha3Keccak256(input string) (hex string) {
+	sk256 := sha3.NewKeccak256()
+	sk256.Write([]byte(input))
+	h := sk256.Sum(nil)
+	return fmt.Sprintf("0x%x", h)
+}

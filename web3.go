@@ -55,3 +55,7 @@ func NewWeb3(provider httpProvider) *Web3 {
 	}
 	return w
 }
+
+func (w Web3) Sha3(input string) string {
+	return sha3Keccak256(input)
+}

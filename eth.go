@@ -8,7 +8,7 @@ type eth struct {
 	httpPrvd     httpProvider
 }
 
-func (e eth) Accounts() ([]string, error) {
+func (e eth) Accounts() (accounts []string, err error) {
 	postData := postRqst{
 		"eth_accounts",
 		[]string{},
@@ -21,7 +21,6 @@ func (e eth) Accounts() ([]string, error) {
 		return []string{}, err
 	}
 	//fmt.Println(postResult.Result)
-	var accounts []string
 	for _, result := range postResult.Result.([]interface{}) {
 		account, ok := result.(string)
 		if ok == true {
@@ -30,6 +29,7 @@ func (e eth) Accounts() ([]string, error) {
 	}
 	return accounts, nil
 }
+
 func (e eth) SendTransaction(in map[string]interface{}) (string, error) {
 	return sendTransaction(e.httpPrvd.url, in)
 }
@@ -37,7 +37,7 @@ func (e eth) SendTransaction(in map[string]interface{}) (string, error) {
 func (e eth) Contract(abiList []abi) contract {
 	return contract{
 		AbiList: abiList,
-		httpPrvd: e.httpPrvd
+		httpPrvd: e.httpPrvd,
 	}
 } 
 
@@ -56,18 +56,24 @@ type contract struct {
 	Address         string
 }
 
-func (c *contract) New(in map[string]interface{}) (*contract, error) {
+func (c contract) New(in map[string]interface{}) (*contract, error) {
 	resp, err := sendTransaction(c.httpPrvd.url, in)
-	return resp, err
+	return &contract{
+		Address: resp,
+	}, err
 }
 
-func (c *contract) At(address string) (*contract) {
+func (c contract) At(address string) (*contract) {
 	c.Address = address
-	return c
+	return &c
 }
 
-func (c contract) SendTransaction(method string, inputs []contractParam) {
+func (c contract) SendTransaction(method string, inputs []contractParam) string {
+	dataString := ""
+	methodFullCode = sha3Keccak256(method)
+	dataString += ""
 	post("send_transaction", postRqst{})
+	return ""
 }
 
 
